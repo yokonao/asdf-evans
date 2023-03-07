@@ -59,10 +59,9 @@ download_release() {
     -H "X-GitHub-Api-Version: 2022-11-28" \
     "https://api.github.com/repos/ktr0731/evans/releases/tags/$version" |
     jq -r ".assets[] | select(.name | endswith(\"$(getos)_$(getarch).tar.gz\")) | .browser_download_url")
-  echo $url
 
   echo "* Downloading $TOOL_NAME release $version..."
-  curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+  curl "${curl_opts[@]}" -o "$filename" "$url" || fail "Could not download $url"
 }
 
 install_version() {
