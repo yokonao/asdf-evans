@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # TODO: Ensure this is the correct GitHub homepage where releases can be downloaded for evans.
-GH_REPO="https://github.com/yokonao/asdf-evans"
+GH_REPO="https://github.com/ktr0731/evans.git"
 TOOL_NAME="evans"
 TOOL_TEST="evans --version"
 
@@ -24,16 +24,12 @@ sort_versions() {
     LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n | awk '{print $2}'
 }
 
-list_github_tags() {
-  git ls-remote --tags --refs "$GH_REPO" |
-    grep -o 'refs/tags/.*' | cut -d/ -f3- |
-    sed 's/^v//' # NOTE: You might want to adapt this sed to remove non-version strings from tags
-}
-
 list_all_versions() {
-  # TODO: Adapt this. By default we simply list the tag names from GitHub releases.
-  # Change this function if evans has other means of determining installable versions.
-  list_github_tags
+  curl -L \
+    -H "Accept: application/vnd.github+json" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    https://api.github.com/repos/ktr0731/evans/releases |
+    jq -r '.[].tag_name'
 }
 
 download_release() {
