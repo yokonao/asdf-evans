@@ -14,10 +14,27 @@ fail() {
 
 curl_opts=(-fsSL)
 
-# NOTE: You might want to remove this if evans is not hosted on GitHub releases.
-if [ -n "${GITHUB_API_TOKEN:-}" ]; then
-  curl_opts=("${curl_opts[@]}" -H "Authorization: token $GITHUB_API_TOKEN")
-fi
+function getos() {
+  case "$(uname -s)" in
+  "Darwin")
+    echo "darwin"
+    ;;
+  "Linux")
+    echo "Linux"
+    ;;
+  esac
+}
+
+function getarch() {
+  case "$(uname -m)" in
+  "arm64")
+    echo "arm64"
+    ;;
+  "x86_64")
+    echo "amd64"
+    ;;
+  esac
+}
 
 sort_versions() {
   sed 'h; s/[+-]/./g; s/.p\([[:digit:]]\)/.z\1/; s/$/.z/; G; s/\n/ /' |
@@ -37,8 +54,12 @@ download_release() {
   version="$1"
   filename="$2"
 
-  # TODO: Adapt the release URL convention for evans
-  url="$GH_REPO/archive/v${version}.tar.gz"
+  url=$(curl -L \
+    -H "Accept: application/vnd.github+json" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    "https://api.github.com/repos/ktr0731/evans/releases/tags/$version" |
+    jq -r ".assets[] | select(.name | endswith(\"$(getos)_$(getarch).tar.gz\")) | .browser_download_url")
+  echo $url
 
   echo "* Downloading $TOOL_NAME release $version..."
   curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
