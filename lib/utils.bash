@@ -20,7 +20,7 @@ function getos() {
     echo "darwin"
     ;;
   "Linux")
-    echo "Linux"
+    echo "linux"
     ;;
   esac
 }
